@@ -235,7 +235,7 @@ No decorative motion is added. Automatic gallery motion pauses on hover/focus, r
 
 **Selected and implemented:** plain static HTML/CSS, one vanilla JavaScript ES module, and a JSON source-content file. This is sufficient for a portfolio with no database, accounts, or server behavior, keeps dependencies at zero, and can be hosted as static files on GitHub Pages.
 
-Each canonical route has a static directory and `index.html`; shared code loads from the domain root, matching the intended custom domain. Existing scaffolded route folders remain the static documents.
+Each canonical route has a static directory and `index.html`. The root document uses a relative `./` base and route documents use `../`, so the shared code and media resolve from the repository site root (`/portfolio/`) and continue to resolve from `/` if a custom domain is configured. `scripts/site.js` derives its base path from the document and prefixes internal links and local media paths accordingly. Existing route folders remain the static documents.
 
 Current foundation files:
 
@@ -247,7 +247,7 @@ Current foundation files:
 - `scripts/components/README.md` — component responsibilities and gallery behavior.
 - `asset folder from nicolaemorozov.com/` — original supplied assets retained in place; no duplicate asset folder was made.
 
-The existing source folder provides the asset grouping. No extra component framework or package manager has been introduced. All eight routes have been verified live. The route shells now load the shared reconstruction for the selected path.
+The existing source folder provides the asset grouping. No extra component framework or package manager has been introduced. All eight routes were verified against Cargo. The route shells load the shared reconstruction for the selected path. For a GitHub Pages project site served at `/portfolio/`, relative base paths are required because root-absolute `/...` links escape the repository prefix. Relative base-path and internal-route handling supports both the repository path and a future custom domain.
 
 ## 9. Implementation notes for Phase 02
 

@@ -1,15 +1,18 @@
 import source from "./source-content.json" with { type: "json" };
 
 const routes = {
-  home: "/",
-  index: "/Index",
-  about: "/About-Me",
-  lucid: "/Lucid-Coffee-Roasters-copy",
-  ahead: "/ahead-studio",
-  farAway: "/Far-away-from-Home-Photobook",
-  spoon: "/Spoon-Studio",
-  lutnita: "/Lutni-a",
+  home: "",
+  index: "Index",
+  about: "About-Me",
+  lucid: "Lucid-Coffee-Roasters-copy",
+  ahead: "ahead-studio",
+  farAway: "Far-away-from-Home-Photobook",
+  spoon: "Spoon-Studio",
+  lutnita: "Lutni-a",
 };
+
+const siteBase = new URL(".", document.baseURI).pathname.replace(/\/?$/, "/");
+const sitePath = (route = "") => `${siteBase}${route}${route ? "/" : ""}`;
 
 const projects = [
   { route: "Lucid-Coffee-Roasters-copy", key: "lucid", label: "Lucid Coffee Roasters copy", thumb: "INDEX thumbnails/Thumbnail-dark.gif" },
@@ -19,7 +22,7 @@ const projects = [
   { route: "Lutni-a", key: "lutnita", label: "Lutnița", thumb: "INDEX thumbnails/Logo_Loop_2.gif" },
 ];
 
-const pathFor = (relative) => `/${encodeURI(`asset folder from nicolaemorozov.com/${relative}`).replaceAll("#", "%23")}`;
+const pathFor = (relative) => sitePath(encodeURI(`asset folder from nicolaemorozov.com/${relative}`).replaceAll("#", "%23"));
 const projectFor = (route) => source.projects.find((project) => project.route === route);
 const assetLookup = new Map();
 
@@ -47,9 +50,9 @@ function localVideo(src, key) {
 
 function header() {
   return `<header class="site-header">
-    <a class="brand-mark" href="/" aria-label="Nicolae Morozov home"><img src="${pathFor("logo.svg")}" alt="NM"></a>
-    <nav class="desktop-nav" aria-label="Main navigation"><a href="/About-Me">About Me</a><a href="/Index">Index</a><a class="instagram-link" href="https://www.instagram.com/nicolae_dymok/" target="_blank" rel="noreferrer" aria-label="Instagram"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3"></rect><circle cx="12" cy="12" r="3.5"></circle><circle class="instagram-dot" cx="17.3" cy="6.9" r=".8"></circle></svg></a></nav>
-    <nav class="mobile-nav" aria-label="Main navigation"><a href="/About-Me">Information</a><a href="/Index">Index</a><a href="https://www.instagram.com/nicolae_dymok/" target="_blank" rel="noreferrer" aria-label="Instagram"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3"></rect><circle cx="12" cy="12" r="3.5"></circle><circle class="instagram-dot" cx="17.3" cy="6.9" r=".8"></circle></svg></a></nav>
+    <a class="brand-mark" href="${sitePath()}" aria-label="Nicolae Morozov home"><img src="${pathFor("logo.svg")}" alt="NM"></a>
+    <nav class="desktop-nav" aria-label="Main navigation"><a href="${sitePath(routes.about)}">About Me</a><a href="${sitePath(routes.index)}">Index</a><a class="instagram-link" href="https://www.instagram.com/nicolae_dymok/" target="_blank" rel="noreferrer" aria-label="Instagram"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3"></rect><circle cx="12" cy="12" r="3.5"></circle><circle class="instagram-dot" cx="17.3" cy="6.9" r=".8"></circle></svg></a></nav>
+    <nav class="mobile-nav" aria-label="Main navigation"><a href="${sitePath(routes.about)}">Information</a><a href="${sitePath(routes.index)}">Index</a><a href="https://www.instagram.com/nicolae_dymok/" target="_blank" rel="noreferrer" aria-label="Instagram"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3"></rect><circle cx="12" cy="12" r="3.5"></circle><circle class="instagram-dot" cx="17.3" cy="6.9" r=".8"></circle></svg></a></nav>
   </header>`;
 }
 
@@ -194,7 +197,7 @@ function projectBlock(project, key, homepage = false) {
 }
 
 function footer() {
-  return `<footer class="site-footer"><a href="mailto:nicolae.morozov@gmail.com">Contact me for the inquiries</a><a href="/Index">Project List</a></footer>`;
+  return `<footer class="site-footer"><a href="mailto:nicolae.morozov@gmail.com">Contact me for the inquiries</a><a href="${sitePath(routes.index)}">Project List</a></footer>`;
 }
 
 function homePage() {
@@ -203,7 +206,7 @@ function homePage() {
 }
 
 function indexPage() {
-  const cards = projects.map((project) => `<a class="index-card" href="/${project.route}"><img src="${pathFor(project.thumb)}" alt="" loading="lazy"><span>${project.label}</span></a>`).join("");
+  const cards = projects.map((project) => `<a class="index-card" href="${sitePath(project.route)}"><img src="${pathFor(project.thumb)}" alt="" loading="lazy"><span>${project.label}</span></a>`).join("");
   return `${header()}${identity()}<main class="index-page"><div class="index-heading">${prepareMarkup(source.index.content, null, source.index.images)}</div><div class="project-index-grid">${cards}</div></main>${footer()}`;
 }
 
@@ -286,8 +289,9 @@ function initInlineVideos(root) {
 }
 
 const app = document.querySelector("#app");
-const currentPath = window.location.pathname.replace(/\/$/, "") || "/";
-const [pageKey] = Object.entries(routes).find(([, path]) => path === currentPath) ?? ["home"];
+const currentPath = decodeURI(window.location.pathname);
+const currentRoute = (currentPath.startsWith(siteBase) ? currentPath.slice(siteBase.length) : currentPath.replace(/^\//, "")).replace(/\/$/, "");
+const [pageKey] = Object.entries(routes).find(([, path]) => path === currentRoute) ?? ["home"];
 if (app) {
   app.innerHTML = pageKey === "home" ? homePage()
     : pageKey === "index" ? indexPage()
