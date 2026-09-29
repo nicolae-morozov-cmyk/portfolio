@@ -22,7 +22,7 @@ const projects = [
   { route: "Lutni-a", key: "lutnita", label: "Lutnița", thumb: "INDEX thumbnails/Logo_Loop_2.gif" },
 ];
 
-const pathFor = (relative) => sitePath(encodeURI(`asset folder from nicolaemorozov.com/${relative}`).replaceAll("#", "%23"));
+const pathFor = (relative) => `${siteBase}${encodeURI(`asset folder from nicolaemorozov.com/${relative}`).replaceAll("#", "%23")}`;
 const projectFor = (route) => source.projects.find((project) => project.route === route);
 const assetLookup = new Map();
 
