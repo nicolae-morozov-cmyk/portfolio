@@ -48,16 +48,16 @@ function localVideo(src, key) {
   return pathFor(`${videoFolders[key]}/${file}`);
 }
 
-function header() {
-  return `<header class="site-header">
+function header(homepage = false) {
+  return `<header class="site-header${homepage ? " homepage-header" : ""}">
     <a class="brand-mark" href="${sitePath()}" aria-label="Nicolae Morozov home"><img src="${pathFor("logo.svg")}" alt="NM"></a>
     <nav class="desktop-nav" aria-label="Main navigation"><a href="${sitePath()}assets/documents/Nicolae_Morozov_Resume.pdf" download="Nicolae_Morozov_Resume.pdf">Download Resume</a><a href="${sitePath(routes.index)}">Index</a><a class="instagram-link" href="https://www.instagram.com/nicolae_dymok/" target="_blank" rel="noreferrer" aria-label="Instagram"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3"></rect><circle cx="12" cy="12" r="3.5"></circle><circle class="instagram-dot" cx="17.3" cy="6.9" r=".8"></circle></svg></a></nav>
     <nav class="mobile-nav" aria-label="Main navigation"><a href="${sitePath()}assets/documents/Nicolae_Morozov_Resume.pdf" download="Nicolae_Morozov_Resume.pdf">Download Resume</a><a href="${sitePath(routes.index)}">Index</a><a href="https://www.instagram.com/nicolae_dymok/" target="_blank" rel="noreferrer" aria-label="Instagram"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3"></rect><circle cx="12" cy="12" r="3.5"></circle><circle class="instagram-dot" cx="17.3" cy="6.9" r=".8"></circle></svg></a></nav>
   </header>`;
 }
 
-function identity() {
-  return `<section class="identity" aria-label="Nicolae Morozov, art directing and visual communication">
+function identity(homepage = false) {
+  return `<section class="identity${homepage ? " homepage-identity" : ""}" aria-label="Nicolae Morozov, art directing and visual communication">
     <div class="identity-intro"><p class="descriptor">art directing &amp; visual communication</p><p>For inquiries: <a href="mailto:nicolae.morozov@gmail.com">nicolae.morozov@gmail.com</a></p></div>
     <h1><span>Nicolae</span><span>Morozov</span></h1>
     <div class="professional-intro"><p class="role-title">Graphic Designer &amp; Art Director</p><p>With 12+ years of experience, I create brand identities and visual systems across print and digital. My approach combines concept, typography, and storytelling to build clear, cohesive visual communication.</p></div>
@@ -209,7 +209,7 @@ function footer() {
 
 function homePage() {
   const blocks = projects.map(({ route, key }) => projectBlock(projectFor(route), key, true)).join("");
-  return `${header()}${identity()}<main class="work-list">${blocks}</main>${footer()}`;
+  return `${header(true)}${identity(true)}<main class="work-list">${blocks}</main>${footer()}`;
 }
 
 function indexPage() {
