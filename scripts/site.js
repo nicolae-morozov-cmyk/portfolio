@@ -51,8 +51,8 @@ function localVideo(src, key) {
 function header() {
   return `<header class="site-header">
     <a class="brand-mark" href="${sitePath()}" aria-label="Nicolae Morozov home"><img src="${pathFor("logo.svg")}" alt="NM"></a>
-    <nav class="desktop-nav" aria-label="Main navigation"><a href="${sitePath(routes.about)}">About Me</a><a href="${sitePath(routes.index)}">Index</a><a class="instagram-link" href="https://www.instagram.com/nicolae_dymok/" target="_blank" rel="noreferrer" aria-label="Instagram"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3"></rect><circle cx="12" cy="12" r="3.5"></circle><circle class="instagram-dot" cx="17.3" cy="6.9" r=".8"></circle></svg></a></nav>
-    <nav class="mobile-nav" aria-label="Main navigation"><a href="${sitePath(routes.about)}">Information</a><a href="${sitePath(routes.index)}">Index</a><a href="https://www.instagram.com/nicolae_dymok/" target="_blank" rel="noreferrer" aria-label="Instagram"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3"></rect><circle cx="12" cy="12" r="3.5"></circle><circle class="instagram-dot" cx="17.3" cy="6.9" r=".8"></circle></svg></a></nav>
+    <nav class="desktop-nav" aria-label="Main navigation"><a href="${sitePath()}assets/documents/Nicolae_Morozov_Resume.pdf" download="Nicolae_Morozov_Resume.pdf">Download Resume</a><a href="${sitePath(routes.index)}">Index</a><a class="instagram-link" href="https://www.instagram.com/nicolae_dymok/" target="_blank" rel="noreferrer" aria-label="Instagram"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3"></rect><circle cx="12" cy="12" r="3.5"></circle><circle class="instagram-dot" cx="17.3" cy="6.9" r=".8"></circle></svg></a></nav>
+    <nav class="mobile-nav" aria-label="Main navigation"><a href="${sitePath()}assets/documents/Nicolae_Morozov_Resume.pdf" download="Nicolae_Morozov_Resume.pdf">Download Resume</a><a href="${sitePath(routes.index)}">Index</a><a href="https://www.instagram.com/nicolae_dymok/" target="_blank" rel="noreferrer" aria-label="Instagram"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3"></rect><circle cx="12" cy="12" r="3.5"></circle><circle class="instagram-dot" cx="17.3" cy="6.9" r=".8"></circle></svg></a></nav>
   </header>`;
 }
 
@@ -60,6 +60,7 @@ function identity() {
   return `<section class="identity" aria-label="Nicolae Morozov, art directing and visual communication">
     <div class="identity-intro"><p class="descriptor">art directing &amp; visual communication</p><p>For inquiries: <a href="mailto:nicolae.morozov@gmail.com">nicolae.morozov@gmail.com</a></p></div>
     <h1><span>Nicolae</span><span>Morozov</span></h1>
+    <div class="professional-intro"><p class="role-title">Graphic Designer &amp; Art Director</p><p>With 12+ years of experience, I create brand identities and visual systems across print and digital. My approach combines concept, typography, and storytelling to build clear, cohesive visual communication.</p></div>
   </section>`;
 }
 
@@ -169,6 +170,12 @@ function prepareMarkup(markup, projectKey = null, assets = [], homepage = false)
     });
   }
   if (homepage) {
+    fragment.querySelectorAll(".source-grid-row").forEach((row) => {
+      const columns = [...row.querySelectorAll(":scope > .source-grid-col")];
+      if (columns.length !== 3 || row.querySelector(".image-gallery")) return;
+      row.classList.add("project-meta");
+      columns.forEach((column, index) => column.classList.add(`project-meta-${index + 1}`));
+    });
     fragment.querySelectorAll(".source-grid-row:has(.image-gallery)").forEach((row) => {
       const gallery = row.querySelector(".image-gallery");
       const mediaColumn = gallery?.closest(".source-grid-col");
