@@ -58,9 +58,9 @@ function header(homepage = false) {
 
 function identity(homepage = false) {
   return `<section class="identity${homepage ? " homepage-identity" : ""}" aria-label="Nicolae Morozov, art directing and visual communication">
-    <div class="identity-intro"><p class="descriptor">art directing &amp; visual communication</p><p>For inquiries: <a href="mailto:nicolae.morozov@gmail.com">nicolae.morozov@gmail.com</a></p></div>
     <h1><span>Nicolae</span><span>Morozov</span></h1>
-    <div class="professional-intro"><p class="role-title">Graphic Designer &amp; Art Director</p><p>With 12+ years of experience, I create brand identities and visual systems across print and digital. My approach combines concept, typography, and storytelling to build clear, cohesive visual communication.</p></div>
+    <div class="identity-aside"><p class="descriptor">art directing &amp; visual communication</p><p class="inquiry">For inquiries: <a href="mailto:nicolae.morozov@gmail.com">nicolae.morozov@gmail.com</a></p></div>
+    <div class="professional-intro"><p>With 12+ years of experience, I create brand identities and visual systems across print and digital. My approach combines concept, typography, and storytelling to build clear, cohesive visual communication.</p></div>
   </section>`;
 }
 
@@ -101,17 +101,42 @@ function prepareMarkup(markup, projectKey = null, assets = [], homepage = false)
       try { return JSON.parse(decodeURIComponent(gallery.dataset.gallery)); }
       catch { return { path: "justify", data: {} }; }
     })();
+    if (projectKey === "spoon") {
+      const spoonVideoCuts = [
+        "Sp00n_refactoring.mp4",
+        "Sp00n_refactoring_2.mp4",
+        "Sp00n_refactoring_3.mp4",
+        "Sp00n_refactoring_4.mp4",
+        "Sp00n_refactoring_5.mp4",
+      ];
+      gallery.replaceChildren(...spoonVideoCuts.map((filename) => {
+        const video = doc.createElement("video");
+        video.src = pathFor(`Sp00n/Spoon Assets Video Cuts/${filename}`);
+        video.muted = true;
+        video.loop = true;
+        video.autoplay = true;
+        video.playsInline = true;
+        video.preload = "auto";
+        return video;
+      }));
+    }
     // Cargo sometimes wraps linked videos in an anchor. Treat that anchor as
     // one gallery item so its link and video keep the same frame and grid slot.
     const media = [...gallery.children].filter((item) =>
       item.matches("img, video") ||
       (item.matches("a") && item.querySelector(":scope > img, :scope > video")),
     );
-    const slides = media.length > 1 && config.path === "slideshow";
+    if (projectKey === "lutnita" && media.length > 2) {
+      media.splice(-3).forEach((item) => item.remove());
+    }
+    const fixedGridGallery = projectKey === "spoon" || projectKey === "lutnita";
+    const slides = media.length > 1 && config.path === "slideshow" && !fixedGridGallery;
     gallery.className = slides ? "image-gallery slideshow" : "image-gallery media-grid";
     if (projectKey === "lucid" && !slides) gallery.classList.add("lucid-gallery");
     if (projectKey === "ahead" && !slides) gallery.classList.add("ahead-gallery");
     if (projectKey === "farAway" && !slides) gallery.classList.add("faraway-gallery");
+    if (projectKey === "spoon" && !slides) gallery.classList.add("spoon-gallery");
+    if (projectKey === "lutnita" && !slides) gallery.classList.add("lutnita-gallery");
     gallery.setAttribute("aria-label", slides ? "Project image gallery" : "Project images");
     gallery.removeAttribute("data-gallery");
     if (slides) {
@@ -168,6 +193,14 @@ function prepareMarkup(markup, projectKey = null, assets = [], homepage = false)
       item.replaceWith(frame);
       frame.append(item);
     });
+  }
+  if (projectKey) {
+    const row = fragment.querySelector(".source-grid-row");
+    const columns = row ? [...row.querySelectorAll(":scope > .source-grid-col")] : [];
+    if (row && columns.length === 3 && !row.querySelector(".image-gallery")) {
+      row.classList.add("project-meta");
+      columns.forEach((column, index) => column.classList.add(`project-meta-${index + 1}`));
+    }
   }
   if (homepage) {
     fragment.querySelectorAll(".source-grid-row").forEach((row) => {
@@ -290,8 +323,41 @@ function initInlineVideos(root) {
     video.autoplay = true;
     video.preload = "auto";
     video.muted = true;
+    video.loop = true;
     video.playsInline = true;
     video.play().catch(() => {});
+  });
+}
+
+function applyLocalGalleryArrangement(root) {
+  if (!["localhost", "127.0.0.1"].includes(window.location.hostname)) return;
+
+  root.querySelectorAll(".spoon-gallery, .lutnita-gallery").forEach((gallery) => {
+    const projectKey = gallery.classList.contains("spoon-gallery") ? "spoon" : "lutnita";
+    const storageKey = `portfolio-preview-order:${window.location.pathname}:${projectKey}`;
+    const deletedStorageKey = `portfolio-preview-deleted:${window.location.pathname}:${projectKey}`;
+    const originalOrder = [...gallery.children];
+    originalOrder.forEach((item, index) => {
+      item.dataset.previewOrderId = `${projectKey}-${index}`;
+      item.draggable = false;
+      item.querySelectorAll("img, video").forEach((media) => { media.draggable = false; });
+    });
+
+    let deletedIds = new Set();
+    try {
+      const itemsById = new Map(originalOrder.map((item) => [item.dataset.previewOrderId, item]));
+      if (projectKey === "lutnita") {
+        const savedDeletedIds = JSON.parse(localStorage.getItem(deletedStorageKey) || "[]");
+        deletedIds = new Set(savedDeletedIds.filter((id) => itemsById.has(id)));
+      }
+      const savedOrder = JSON.parse(localStorage.getItem(storageKey) || "[]");
+      const visibleIds = originalOrder.map((item) => item.dataset.previewOrderId).filter((id) => !deletedIds.has(id));
+      const savedVisibleIds = Array.isArray(savedOrder) ? savedOrder.filter((id) => itemsById.has(id) && !deletedIds.has(id)) : [];
+      if (savedVisibleIds.length === visibleIds.length && new Set(savedVisibleIds).size === visibleIds.length) {
+        savedVisibleIds.forEach((id) => gallery.append(itemsById.get(id)));
+      }
+      originalOrder.filter((item) => deletedIds.has(item.dataset.previewOrderId)).forEach((item) => item.remove());
+    } catch {}
   });
 }
 
@@ -306,4 +372,5 @@ if (app) {
         : projectPage(pageKey);
   initInlineVideos(app);
   initGalleries(app);
+  applyLocalGalleryArrangement(app);
 }
