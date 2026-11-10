@@ -1,4 +1,4 @@
-import source from "./source-content.json?v=20261110-2" with { type: "json" };
+import source from "./source-content.json?v=20261110-3" with { type: "json" };
 
 const routes = {
   home: "",
@@ -433,90 +433,6 @@ function initImageZoom(root) {
   });
 }
 
-function applyLocalGalleryArrangement(root) {
-  if (!["localhost", "127.0.0.1"].includes(window.location.hostname)) return;
-
-  root.querySelectorAll(".spoon-gallery").forEach((gallery) => {
-    const projectKey = "spoon";
-    const storageKey = `portfolio-preview-order:${window.location.pathname}:${projectKey}`;
-    const originalOrder = [...gallery.children];
-    originalOrder.forEach((item, index) => {
-      item.dataset.previewOrderId = `${projectKey}-${index}`;
-      item.draggable = false;
-      item.querySelectorAll("img, video").forEach((media) => { media.draggable = false; });
-    });
-
-    try {
-      const savedOrder = JSON.parse(localStorage.getItem(storageKey) || "[]");
-      const originalIds = originalOrder.map((item) => item.dataset.previewOrderId);
-      const savedIds = Array.isArray(savedOrder) ? savedOrder.filter((id) => originalIds.includes(id)) : [];
-      if (savedIds.length === originalIds.length && new Set(savedIds).size === originalIds.length) {
-        const itemsById = new Map(originalOrder.map((item) => [item.dataset.previewOrderId, item]));
-        savedIds.forEach((id) => gallery.append(itemsById.get(id)));
-      }
-    } catch {}
-
-    const saveOrder = () => {
-      try {
-        localStorage.setItem(storageKey, JSON.stringify([...gallery.children].map((item) => item.dataset.previewOrderId)));
-      } catch {}
-    };
-
-    if (projectKey === "spoon") {
-      const toolbar = document.createElement("div");
-      toolbar.className = "gallery-edit-toolbar";
-      toolbar.innerHTML = '<span>Drag to swap</span><button type="button">Reset layout</button>';
-      gallery.parentElement.insertBefore(toolbar, gallery);
-      toolbar.querySelector("button").addEventListener("click", () => {
-        try {
-          localStorage.removeItem(storageKey);
-        } catch {}
-        gallery.replaceChildren(...originalOrder);
-      });
-    }
-
-    originalOrder.forEach((item) => {
-      item.draggable = true;
-      item.title = "Drag to swap with another image";
-      item.setAttribute("aria-roledescription", "draggable image");
-      item.querySelectorAll("img, video").forEach((media) => { media.draggable = false; });
-    });
-
-    let draggedItem = null;
-    gallery.addEventListener("dragstart", (event) => {
-      const item = event.target.closest(".media-frame");
-      if (item?.parentElement !== gallery) { event.preventDefault(); return; }
-      if (!item) { event.preventDefault(); return; }
-      draggedItem = item;
-      item.classList.add("is-dragging");
-      event.dataTransfer.effectAllowed = "move";
-      event.dataTransfer.setData("text/plain", item.dataset.previewOrderId);
-    });
-    gallery.addEventListener("dragover", (event) => {
-      const target = event.target.closest(".media-frame");
-      if (target?.parentElement !== gallery) return;
-      if (!draggedItem || !target || target === draggedItem) return;
-      event.preventDefault();
-      event.dataTransfer.dropEffect = "move";
-    });
-    gallery.addEventListener("drop", (event) => {
-      const target = event.target.closest(".media-frame");
-      if (target?.parentElement !== gallery) return;
-      if (!draggedItem || !target || target === draggedItem) return;
-      event.preventDefault();
-      const placeholder = document.createElement("div");
-      gallery.insertBefore(placeholder, draggedItem);
-      gallery.insertBefore(draggedItem, target);
-      gallery.replaceChild(target, placeholder);
-      saveOrder();
-    });
-    gallery.addEventListener("dragend", () => {
-      draggedItem?.classList.remove("is-dragging");
-      draggedItem = null;
-    });
-  });
-}
-
 const app = document.querySelector("#app");
 const currentPath = decodeURI(window.location.pathname);
 const currentRoute = (currentPath.startsWith(siteBase) ? currentPath.slice(siteBase.length) : currentPath.replace(/^\//, "")).replace(/\/$/, "");
@@ -528,6 +444,5 @@ if (app) {
   initInlineVideos(app);
   initGalleries(app);
   initImageZoom(app);
-  applyLocalGalleryArrangement(app);
   initLocalClock(app);
 }
