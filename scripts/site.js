@@ -265,7 +265,7 @@ function projectBlock(project, key, homepage = false) {
 }
 
 function footer() {
-  return `<footer class="site-footer"><a class="back-to-top" href="#top">Back to top</a><a class="contact-link" href="mailto:nicolae.morozov@gmail.com">Contact me for the inquiries</a></footer>`;
+  return `<footer class="site-footer"><a class="back-to-top" href="#top">Back to top</a><a class="contact-link" href="mailto:nicolae.morozov@gmail.com?subject=Collaboration%20Opportunity">Contact me for the inquiries</a></footer>`;
 }
 
 function homePage() {
