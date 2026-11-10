@@ -1,7 +1,11 @@
-import source from "./source-content.json?v=20261110-3" with { type: "json" };
+async function startSite() {
+  const sourceResponse = await fetch(new URL("./source-content.json?v=20261110-4", import.meta.url));
+  if (!sourceResponse.ok) throw new Error(`Portfolio content request failed (${sourceResponse.status})`);
+  const source = await sourceResponse.json();
 
 const routes = {
   home: "",
+  index: "Index",
   about: "About-Me",
   lucid: "Lucid-Coffee-Roasters-copy",
   ahead: "ahead-studio",
@@ -269,6 +273,11 @@ function homePage() {
   return `${header(true)}${identity(true)}<main class="work-list">${blocks}</main>${footer()}`;
 }
 
+function indexPage() {
+  const cards = projects.map(({ route, key, label, thumb }) => `<a class="index-card" href="${sitePath(route)}"><img src="${pathFor(thumb)}" alt="${label} project preview"><span>${label}</span></a>`).join("");
+  return `${header()}${identity()}<main class="project-index"><h2>Current projects.</h2><div class="index-grid">${cards}</div></main>${footer()}`;
+}
+
 function aboutPage() {
   return `${header()}${identity()}<main class="about-page">${prepareMarkup(source.about.content, null, source.about.images)}</main>${footer()}`;
 }
@@ -439,6 +448,7 @@ const currentRoute = (currentPath.startsWith(siteBase) ? currentPath.slice(siteB
 const [pageKey] = Object.entries(routes).find(([, path]) => path === currentRoute) ?? ["home"];
 if (app) {
   app.innerHTML = pageKey === "home" ? homePage()
+    : pageKey === "index" ? indexPage()
     : pageKey === "about" ? aboutPage()
       : projectPage(pageKey);
   initInlineVideos(app);
@@ -446,3 +456,12 @@ if (app) {
   initImageZoom(app);
   initLocalClock(app);
 }
+}
+
+startSite().catch((error) => {
+  console.error("The portfolio could not be initialized.", error);
+  const app = document.querySelector("#app");
+  if (app) {
+    app.innerHTML = `<main class="load-error"><h1>Portfolio temporarily unavailable</h1><p>Please refresh the page or contact me at <a href="mailto:nicolae.morozov@gmail.com">nicolae.morozov@gmail.com</a>.</p></main>`;
+  }
+});

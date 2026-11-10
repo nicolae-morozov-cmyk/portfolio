@@ -19,6 +19,10 @@ a:hover { color: inherit; }
 a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline: 1px solid currentColor; outline-offset: 3px; }
 img, video { max-width: 100%; }
 #app { padding: 22px var(--edge) 14px; }
+.load-error { min-height: 60vh; display: flex; flex-direction: column; justify-content: center; max-width: 620px; margin: 0 auto; font-size: 16px; line-height: 1.4; }
+.load-error h1 { margin: 0 0 12px; font-size: clamp(28px,5vw,48px); font-weight: 400; line-height: 1; }
+.load-error p { margin: 0; }
+.load-error a { text-decoration: underline; }
 
 .site-header { height: 62px; display: block; position: relative; z-index: 2; font-size: 12.6px; }
 .brand-mark { width: 96px; height: 58px; display: block; position: relative; z-index: 1; }
@@ -47,6 +51,11 @@ img, video { max-width: 100%; }
 .professional-intro p { margin: 0; }
 
 .work-list { display: block; }
+.project-index { padding-top: 0; }
+.project-index h2 { margin: 0 0 12px; font-size: var(--body-size); font-weight: 400; line-height: var(--body-leading); }
+.index-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: var(--gutter); }
+.index-card { display: block; min-width: 0; font-size: var(--body-size); line-height: var(--body-leading); }
+.index-card img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; margin-bottom: 6px; }
 .project-content { font-size: var(--body-size); line-height: var(--body-leading); }
 .homepage-project { margin: 0; padding-bottom: 48px; }
 .homepage-project + .homepage-project { margin-top: 0; }
@@ -165,6 +174,8 @@ body.image-zoom-open { overflow: hidden; }
   .professional-intro { order: 2; max-width: 440px; margin: 0 0 7px; font-size: 11.55px; line-height: 1.4; }
   .professional-intro p { margin: 0; }
   .case-page { padding-top: 0; }
+  .index-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--gutter); }
+  .index-card { font-size: 11px; }
   .source-grid-row { grid-template-columns: repeat(12,minmax(0,1fr)); row-gap: 4px; column-gap: var(--gutter); margin-bottom: 8px; }
   .source-grid-col[grid-col="x10"], .source-grid-col[grid-col="4"] { grid-column: span 4; }
   .source-grid-col[grid-col="8"] { grid-column: span 8; }
