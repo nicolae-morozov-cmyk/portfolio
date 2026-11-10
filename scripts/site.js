@@ -1,8 +1,7 @@
-import source from "./source-content.json" with { type: "json" };
+import source from "./source-content.json?v=20261110-2" with { type: "json" };
 
 const routes = {
   home: "",
-  index: "Index",
   about: "About-Me",
   lucid: "Lucid-Coffee-Roasters-copy",
   ahead: "ahead-studio",
@@ -49,10 +48,10 @@ function localVideo(src, key) {
 }
 
 function header(homepage = false) {
-  return `<header class="site-header${homepage ? " homepage-header" : ""}">
+  return `<header id="top" class="site-header${homepage ? " homepage-header" : ""}">
     <a class="brand-mark" href="${sitePath()}" aria-label="Nicolae Morozov home"><img src="${pathFor("logo.svg")}" alt="NM"></a>
-    <nav class="desktop-nav" aria-label="Main navigation"><a href="${sitePath()}assets/documents/Nicolae_Morozov_Resume.pdf" download="Nicolae_Morozov_Resume.pdf">Download Resume</a><a href="${sitePath(routes.index)}">Index</a><a class="instagram-link" href="https://www.instagram.com/nicolae_dymok/" target="_blank" rel="noreferrer" aria-label="Instagram"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3"></rect><circle cx="12" cy="12" r="3.5"></circle><circle class="instagram-dot" cx="17.3" cy="6.9" r=".8"></circle></svg></a></nav>
-    <nav class="mobile-nav" aria-label="Main navigation"><a href="${sitePath()}assets/documents/Nicolae_Morozov_Resume.pdf" download="Nicolae_Morozov_Resume.pdf">Download Resume</a><a href="${sitePath(routes.index)}">Index</a><a href="https://www.instagram.com/nicolae_dymok/" target="_blank" rel="noreferrer" aria-label="Instagram"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3"></rect><circle cx="12" cy="12" r="3.5"></circle><circle class="instagram-dot" cx="17.3" cy="6.9" r=".8"></circle></svg></a></nav>
+    <nav class="desktop-nav" aria-label="Main navigation"><a href="mailto:nicolae.morozov@gmail.com?subject=Request%20for%20CV">Request a CV</a><a class="instagram-link" href="https://www.instagram.com/nicolae_dymok/" target="_blank" rel="noreferrer" aria-label="Instagram"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3"></rect><circle cx="12" cy="12" r="3.5"></circle><circle class="instagram-dot" cx="17.3" cy="6.9" r=".8"></circle></svg></a><span class="local-clock" aria-label="Your local time"><time></time><span class="clock-offset"></span></span></nav>
+    <nav class="mobile-nav" aria-label="Main navigation"><a href="mailto:nicolae.morozov@gmail.com?subject=Request%20for%20CV">Request a CV</a><span class="local-clock" aria-label="Your local time"><time></time><span class="clock-offset"></span></span><a class="instagram-link" href="https://www.instagram.com/nicolae_dymok/" target="_blank" rel="noreferrer" aria-label="Instagram"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3"></rect><circle cx="12" cy="12" r="3.5"></circle><circle class="instagram-dot" cx="17.3" cy="6.9" r=".8"></circle></svg></a></nav>
   </header>`;
 }
 
@@ -62,6 +61,31 @@ function identity(homepage = false) {
     <div class="identity-aside"><p class="descriptor">art directing &amp; visual communication</p><p class="inquiry">For inquiries: <a href="mailto:nicolae.morozov@gmail.com">nicolae.morozov@gmail.com</a></p></div>
     <div class="professional-intro"><p>With 12+ years of experience, I create brand identities and visual systems across print and digital. My approach combines concept, typography, and storytelling to build clear, cohesive visual communication.</p></div>
   </section>`;
+}
+
+function initLocalClock(root) {
+  const clocks = [...root.querySelectorAll(".local-clock")];
+  if (!clocks.length) return;
+  const timeFormat = new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" });
+  const update = () => {
+    const now = new Date();
+    const time = timeFormat.format(now);
+    const offsetMinutes = -now.getTimezoneOffset();
+    const offsetSign = offsetMinutes >= 0 ? "+" : "-";
+    const absoluteOffset = Math.abs(offsetMinutes);
+    const offsetHours = Math.floor(absoluteOffset / 60);
+    const offsetRemainder = absoluteOffset % 60;
+    const offset = `GMT${offsetSign}${offsetHours}${offsetRemainder ? `:${String(offsetRemainder).padStart(2, "0")}` : ""}`;
+    clocks.forEach((clock) => {
+      const timeElement = clock.querySelector("time");
+      timeElement.textContent = time;
+      timeElement.dateTime = now.toISOString();
+      clock.querySelector(".clock-offset").textContent = offset;
+      clock.setAttribute("aria-label", `Local time ${time}, ${offset}`);
+    });
+  };
+  update();
+  window.setInterval(update, 1_000);
 }
 
 function prepareMarkup(markup, projectKey = null, assets = [], homepage = false) {
@@ -237,17 +261,12 @@ function projectBlock(project, key, homepage = false) {
 }
 
 function footer() {
-  return `<footer class="site-footer"><a href="mailto:nicolae.morozov@gmail.com">Contact me for the inquiries</a><a href="${sitePath(routes.index)}">Project List</a></footer>`;
+  return `<footer class="site-footer"><a class="back-to-top" href="#top">Back to top</a><a class="contact-link" href="mailto:nicolae.morozov@gmail.com">Contact me for the inquiries</a></footer>`;
 }
 
 function homePage() {
   const blocks = projects.map(({ route, key }) => projectBlock(projectFor(route), key, true)).join("");
   return `${header(true)}${identity(true)}<main class="work-list">${blocks}</main>${footer()}`;
-}
-
-function indexPage() {
-  const cards = projects.map((project) => `<a class="index-card" href="${sitePath(project.route)}"><img src="${pathFor(project.thumb)}" alt="" loading="lazy"><span>${project.label}</span></a>`).join("");
-  return `${header()}${identity()}<main class="index-page"><div class="index-heading">${prepareMarkup(source.index.content, null, source.index.images)}</div><div class="project-index-grid">${cards}</div></main>${footer()}`;
 }
 
 function aboutPage() {
@@ -256,7 +275,7 @@ function aboutPage() {
 
 function projectPage(key) {
   const route = routes[key];
-  const project = projectFor(route.slice(1));
+  const project = projectFor(route);
   if (!project) return homePage();
   return `${header()}${identity()}<main class="case-page">${projectBlock(project, key)}</main>${footer()}`;
 }
@@ -329,13 +348,97 @@ function initInlineVideos(root) {
   });
 }
 
+function initImageZoom(root) {
+  const projectMedia = [...root.querySelectorAll(".project-content img, .project-content video")];
+  if (!projectMedia.length) return;
+
+  const overlay = document.createElement("div");
+  overlay.className = "image-zoom-overlay";
+  overlay.hidden = true;
+  overlay.tabIndex = -1;
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-label", "Enlarged project image");
+  const enlargedImage = document.createElement("img");
+  const enlargedVideo = document.createElement("video");
+  enlargedVideo.autoplay = true;
+  enlargedVideo.preload = "auto";
+  enlargedVideo.muted = true;
+  enlargedVideo.loop = true;
+  enlargedVideo.playsInline = true;
+  overlay.append(enlargedImage, enlargedVideo);
+  document.body.append(overlay);
+
+  let activeMedia = [];
+  let activeIndex = -1;
+  let triggerMedia = null;
+  const showMedia = (index) => {
+    if (!activeMedia.length) return;
+    activeIndex = (index + activeMedia.length) % activeMedia.length;
+    const media = activeMedia[activeIndex];
+    enlargedVideo.pause();
+    enlargedVideo.removeAttribute("src");
+    enlargedVideo.load();
+    if (media instanceof HTMLVideoElement) {
+      enlargedImage.hidden = true;
+      enlargedVideo.hidden = false;
+      enlargedVideo.src = media.currentSrc || media.src;
+      enlargedVideo.load();
+      enlargedVideo.play().catch(() => {});
+    } else {
+      enlargedVideo.hidden = true;
+      enlargedImage.hidden = false;
+      enlargedImage.src = media.currentSrc || media.src;
+      enlargedImage.alt = media.alt || "Enlarged project image";
+    }
+    overlay.setAttribute("aria-label", `Enlarged project media ${activeIndex + 1} of ${activeMedia.length}`);
+  };
+  const close = () => {
+    overlay.hidden = true;
+    document.body.classList.remove("image-zoom-open");
+    enlargedVideo.pause();
+    triggerMedia?.focus();
+    triggerMedia = null;
+    activeMedia = [];
+    activeIndex = -1;
+  };
+
+  root.querySelectorAll(".project-content").forEach((project) => {
+    project.addEventListener("click", (event) => {
+      const media = event.target.closest("img, video");
+      if (!media || !project.contains(media)) return;
+      event.preventDefault();
+      activeMedia = [...project.querySelectorAll("img, video")];
+      activeIndex = activeMedia.indexOf(media);
+      triggerMedia = media;
+      triggerMedia.tabIndex = 0;
+      showMedia(activeIndex);
+      overlay.hidden = false;
+      document.body.classList.add("image-zoom-open");
+      overlay.focus();
+    });
+  });
+
+  overlay.addEventListener("click", close);
+  document.addEventListener("keydown", (event) => {
+    if (overlay.hidden) return;
+    if (event.key === "Escape") close();
+    else if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      showMedia(activeIndex - 1);
+    } else if (event.key === "ArrowRight") {
+      event.preventDefault();
+      showMedia(activeIndex + 1);
+    }
+  });
+}
+
 function applyLocalGalleryArrangement(root) {
   if (!["localhost", "127.0.0.1"].includes(window.location.hostname)) return;
 
-  root.querySelectorAll(".spoon-gallery, .lutnita-gallery").forEach((gallery) => {
-    const projectKey = gallery.classList.contains("spoon-gallery") ? "spoon" : "lutnita";
+  root.querySelectorAll(".spoon-gallery").forEach((gallery) => {
+    const projectKey = "spoon";
     const storageKey = `portfolio-preview-order:${window.location.pathname}:${projectKey}`;
-    const deletedStorageKey = `portfolio-preview-deleted:${window.location.pathname}:${projectKey}`;
     const originalOrder = [...gallery.children];
     originalOrder.forEach((item, index) => {
       item.dataset.previewOrderId = `${projectKey}-${index}`;
@@ -343,21 +446,74 @@ function applyLocalGalleryArrangement(root) {
       item.querySelectorAll("img, video").forEach((media) => { media.draggable = false; });
     });
 
-    let deletedIds = new Set();
     try {
-      const itemsById = new Map(originalOrder.map((item) => [item.dataset.previewOrderId, item]));
-      if (projectKey === "lutnita") {
-        const savedDeletedIds = JSON.parse(localStorage.getItem(deletedStorageKey) || "[]");
-        deletedIds = new Set(savedDeletedIds.filter((id) => itemsById.has(id)));
-      }
       const savedOrder = JSON.parse(localStorage.getItem(storageKey) || "[]");
-      const visibleIds = originalOrder.map((item) => item.dataset.previewOrderId).filter((id) => !deletedIds.has(id));
-      const savedVisibleIds = Array.isArray(savedOrder) ? savedOrder.filter((id) => itemsById.has(id) && !deletedIds.has(id)) : [];
-      if (savedVisibleIds.length === visibleIds.length && new Set(savedVisibleIds).size === visibleIds.length) {
-        savedVisibleIds.forEach((id) => gallery.append(itemsById.get(id)));
+      const originalIds = originalOrder.map((item) => item.dataset.previewOrderId);
+      const savedIds = Array.isArray(savedOrder) ? savedOrder.filter((id) => originalIds.includes(id)) : [];
+      if (savedIds.length === originalIds.length && new Set(savedIds).size === originalIds.length) {
+        const itemsById = new Map(originalOrder.map((item) => [item.dataset.previewOrderId, item]));
+        savedIds.forEach((id) => gallery.append(itemsById.get(id)));
       }
-      originalOrder.filter((item) => deletedIds.has(item.dataset.previewOrderId)).forEach((item) => item.remove());
     } catch {}
+
+    const saveOrder = () => {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify([...gallery.children].map((item) => item.dataset.previewOrderId)));
+      } catch {}
+    };
+
+    if (projectKey === "spoon") {
+      const toolbar = document.createElement("div");
+      toolbar.className = "gallery-edit-toolbar";
+      toolbar.innerHTML = '<span>Drag to swap</span><button type="button">Reset layout</button>';
+      gallery.parentElement.insertBefore(toolbar, gallery);
+      toolbar.querySelector("button").addEventListener("click", () => {
+        try {
+          localStorage.removeItem(storageKey);
+        } catch {}
+        gallery.replaceChildren(...originalOrder);
+      });
+    }
+
+    originalOrder.forEach((item) => {
+      item.draggable = true;
+      item.title = "Drag to swap with another image";
+      item.setAttribute("aria-roledescription", "draggable image");
+      item.querySelectorAll("img, video").forEach((media) => { media.draggable = false; });
+    });
+
+    let draggedItem = null;
+    gallery.addEventListener("dragstart", (event) => {
+      const item = event.target.closest(".media-frame");
+      if (item?.parentElement !== gallery) { event.preventDefault(); return; }
+      if (!item) { event.preventDefault(); return; }
+      draggedItem = item;
+      item.classList.add("is-dragging");
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", item.dataset.previewOrderId);
+    });
+    gallery.addEventListener("dragover", (event) => {
+      const target = event.target.closest(".media-frame");
+      if (target?.parentElement !== gallery) return;
+      if (!draggedItem || !target || target === draggedItem) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "move";
+    });
+    gallery.addEventListener("drop", (event) => {
+      const target = event.target.closest(".media-frame");
+      if (target?.parentElement !== gallery) return;
+      if (!draggedItem || !target || target === draggedItem) return;
+      event.preventDefault();
+      const placeholder = document.createElement("div");
+      gallery.insertBefore(placeholder, draggedItem);
+      gallery.insertBefore(draggedItem, target);
+      gallery.replaceChild(target, placeholder);
+      saveOrder();
+    });
+    gallery.addEventListener("dragend", () => {
+      draggedItem?.classList.remove("is-dragging");
+      draggedItem = null;
+    });
   });
 }
 
@@ -367,10 +523,11 @@ const currentRoute = (currentPath.startsWith(siteBase) ? currentPath.slice(siteB
 const [pageKey] = Object.entries(routes).find(([, path]) => path === currentRoute) ?? ["home"];
 if (app) {
   app.innerHTML = pageKey === "home" ? homePage()
-    : pageKey === "index" ? indexPage()
-      : pageKey === "about" ? aboutPage()
-        : projectPage(pageKey);
+    : pageKey === "about" ? aboutPage()
+      : projectPage(pageKey);
   initInlineVideos(app);
   initGalleries(app);
+  initImageZoom(app);
   applyLocalGalleryArrangement(app);
+  initLocalClock(app);
 }
